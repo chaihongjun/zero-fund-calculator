@@ -10,8 +10,8 @@
     "deploy": "npm run build && npx gh-pages -d dist"
   },
   "dependencies": {
-    "@element-plus/icons-vue": "^2.3.2",
-    "element-plus": "^2.14.0",
+    "@tailwindcss/vite": "^4.3.0",
+    "tailwindcss": "^4.3.0",
     "vue": "^3.5.34"
   },
   "devDependencies": {
