@@ -91,8 +91,12 @@
     <!-- 零成本结果 -->
     <div v-if="isValid" :class="['rounded-xl shadow-sm border overflow-hidden', canZeroCost ? 'bg-emerald-50 border-emerald-300' : 'bg-amber-50 border-amber-300']">
       <div :class="['flex items-center gap-2 px-5 py-4 border-b font-semibold', canZeroCost ? 'border-emerald-200 text-emerald-800' : 'border-amber-200 text-amber-800']">
-        <span v-if="canZeroCost" class="text-lg">🎉</span>
-        <span v-else class="text-lg">⚠️</span>
+        <svg v-if="canZeroCost" class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <svg v-else class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
         <span>{{ canZeroCost ? '已满足零成本条件' : '尚未达到零成本条件' }}</span>
       </div>
       <div class="px-5 py-4">
