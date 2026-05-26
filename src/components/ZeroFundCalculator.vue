@@ -46,20 +46,19 @@
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1.5">赎回费率</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1.5">预估赎回费（元）</label>
             <div class="relative w-28">
               <input
-                v-model.number="feeRate"
+                v-model.number="estimatedFee"
                 type="number"
                 step="0.01"
                 min="0"
-                max="100"
-                placeholder="0.50"
+                placeholder="例：5.00"
                 class="w-full pl-3 pr-7 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
               />
-              <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
+              <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">¥</span>
             </div>
-            <p class="mt-1.5 text-xs text-gray-400">不填或填 0 表示不计费率</p>
+            <p class="mt-1.5 text-xs text-gray-400">不填或填 0 表示不计手续费</p>
           </div>
         </div>
       </div>
@@ -152,7 +151,7 @@ import { ref, computed } from 'vue'
 const shares = ref(null)
 const costPrice = ref(null)
 const nav = ref(null)
-const feeRate = ref(null)
+const estimatedFee = ref(null)
 
 const isValid = computed(() =>
   +shares.value > 0 && +costPrice.value > 0 && +nav.value > 0
@@ -165,11 +164,11 @@ const profitRate = computed(() =>
   totalPrincipal.value ? (profit.value / totalPrincipal.value) * 100 : 0
 )
 
-const feeDecimal = computed(() => (feeRate.value ?? 0) / 100)
+const feeAmount = computed(() => estimatedFee.value ?? 0)
 
 const targetSellCash = computed(() => {
   if (!isValid.value) return 0
-  return totalPrincipal.value / (1 - feeDecimal.value)
+  return totalPrincipal.value + feeAmount.value
 })
 
 const canZeroCost = computed(() => marketValue.value >= targetSellCash.value)
@@ -179,9 +178,8 @@ const remainingShares = computed(() => shares.value - sellShares.value)
 const remainingValue = computed(() => remainingShares.value * nav.value)
 const breakEvenNav = computed(() => {
   if (!isValid.value) return 0
-  return totalPrincipal.value / (shares.value * (1 - feeDecimal.value))
+  return targetSellCash.value / shares.value
 })
-const sellFee = computed(() => targetSellCash.value * feeDecimal.value)
 const gap = computed(() => Math.max(0, targetSellCash.value - marketValue.value))
 
 const fmt = (v, d = 2) => (v ?? 0).toFixed(d)
@@ -203,7 +201,7 @@ const stats = computed(() => [
 
 const sellPlan = computed(() => [
   { label: '需卖出金额', value: `¥ ${fmt(targetSellCash.value)}` },
-  { label: '预估赎回费', value: `¥ ${fmt(sellFee.value)}` },
+  { label: '预估赎回费', value: `¥ ${fmt(feeAmount.value)}` },
   { label: '对应卖出份额', value: `${fmt(sellShares.value)} 份` },
   { label: '剩余零成本份额', value: `${fmt(remainingShares.value)} 份` },
   { label: '零成本底仓市值', value: `¥ ${fmt(remainingValue.value)}` }
