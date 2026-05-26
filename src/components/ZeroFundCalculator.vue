@@ -46,24 +46,25 @@
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1.5">赎回费率</label>
-            <div class="flex items-center gap-3 pt-1">
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" v-model="considerFee" class="sr-only peer" />
-                <div class="w-9 h-5 bg-gray-300 rounded-full peer peer-checked:bg-emerald-500 peer-focus:ring-2 peer-focus:ring-emerald-300 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
-                <span class="ml-2 text-sm text-gray-500">{{ considerFee ? '考虑费率' : '不计费率' }}</span>
-              </label>
-              <div v-if="considerFee" class="relative w-24">
-                <input
-                  v-model.number="feeRate"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="100"
-                  class="w-full pl-3 pr-7 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
-                />
-                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
-              </div>
+            <label class="block text-sm font-medium text-gray-600 mb-1.5">持有天数</label>
+            <div class="flex items-center gap-3">
+              <input
+                v-model.number="holdingDays"
+                type="number"
+                step="1"
+                min="0"
+                placeholder="例：180"
+                class="w-28 px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
+              />
+              <span class="text-sm text-gray-400">天</span>
+              <span
+                v-if="holdingDays !== null"
+                :class="['text-xs font-medium px-2.5 py-1 rounded-full', feeBadgeClass]"
+              >{{ feeBadgeText }}</span>
+            </div>
+            <div class="mt-2 text-xs text-gray-400 leading-relaxed">
+              持有 0-6 天：1.50% &nbsp;|&nbsp; 7-29 天：0.75% &nbsp;|&nbsp; 30-179 天：0.50%<br />
+              180-364 天：0.10% &nbsp;|&nbsp; 365 天以上：免赎回费
             </div>
           </div>
         </div>
@@ -157,8 +158,7 @@ import { ref, computed } from 'vue'
 const shares = ref(null)
 const costPrice = ref(null)
 const nav = ref(null)
-const considerFee = ref(true)
-const feeRate = ref(0.5)
+const holdingDays = ref(null)
 
 const isValid = computed(() =>
   +shares.value > 0 && +costPrice.value > 0 && +nav.value > 0
@@ -171,7 +171,30 @@ const profitRate = computed(() =>
   totalPrincipal.value ? (profit.value / totalPrincipal.value) * 100 : 0
 )
 
-const feeDecimal = computed(() => considerFee.value ? feeRate.value / 100 : 0)
+const feeTiers = [
+  { max: 6, rate: 0.015 },
+  { max: 29, rate: 0.0075 },
+  { max: 179, rate: 0.005 },
+  { max: 364, rate: 0.001 },
+  { max: Infinity, rate: 0 },
+]
+const feeRatePct = computed(() => {
+  if (!holdingDays.value && holdingDays.value !== 0) return null
+  const t = feeTiers.find(t => holdingDays.value <= t.max)
+  return t ? t.rate * 100 : null
+})
+const feeDecimal = computed(() => (feeRatePct.value ?? 0) / 100)
+const feeBadgeText = computed(() => {
+  if (feeRatePct.value === null) return '未填写'
+  if (feeRatePct.value === 0) return '免赎回费'
+  return `赎回费 ${feeRatePct.value.toFixed(2)}%`
+})
+const feeBadgeClass = computed(() => {
+  if (feeRatePct.value === null) return 'bg-gray-100 text-gray-500'
+  if (feeRatePct.value === 0) return 'bg-green-100 text-green-700'
+  if (feeRatePct.value >= 1) return 'bg-red-100 text-red-700'
+  return 'bg-amber-100 text-amber-700'
+})
 
 const targetSellCash = computed(() => {
   if (!isValid.value) return 0
