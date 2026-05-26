@@ -210,6 +210,7 @@ const breakEvenNav = computed(() => {
   if (!isValid.value) return 0
   return totalPrincipal.value / (shares.value * (1 - feeDecimal.value))
 })
+const sellFee = computed(() => targetSellCash.value * feeDecimal.value)
 const gap = computed(() => Math.max(0, targetSellCash.value - marketValue.value))
 
 const fmt = (v, d = 2) => (v ?? 0).toFixed(d)
@@ -231,6 +232,7 @@ const stats = computed(() => [
 
 const sellPlan = computed(() => [
   { label: '需卖出金额', value: `¥ ${fmt(targetSellCash.value)}` },
+  { label: '预估赎回费', value: `¥ ${fmt(sellFee.value)}` },
   { label: '对应卖出份额', value: `${fmt(sellShares.value)} 份` },
   { label: '剩余零成本份额', value: `${fmt(remainingShares.value)} 份` },
   { label: '零成本底仓市值', value: `¥ ${fmt(remainingValue.value)}` }
