@@ -183,7 +183,10 @@ const canZeroCost = computed(() => marketValue.value >= targetSellCash.value)
 const sellShares = computed(() => isValid.value ? targetSellCash.value / nav.value : 0)
 const remainingShares = computed(() => shares.value - sellShares.value)
 const remainingValue = computed(() => remainingShares.value * nav.value)
-const breakEvenNav = computed(() => totalPrincipal.value / shares.value)
+const breakEvenNav = computed(() => {
+  if (!isValid.value) return 0
+  return totalPrincipal.value / (shares.value * (1 - feeDecimal.value))
+})
 const gap = computed(() => Math.max(0, targetSellCash.value - marketValue.value))
 
 const fmt = (v, d = 2) => (v ?? 0).toFixed(d)
@@ -214,6 +217,6 @@ const gapInfo = computed(() => [
   { label: '当前缺口', value: `¥ ${fmt(gap.value)}` },
   { label: '需卖出金额', value: `¥ ${fmt(targetSellCash.value)}` },
   { label: '净值需涨至', value: `${fmt(breakEvenNav.value, 4)} 元/份` },
-  { label: '当前净值差距', value: `${fmt((breakEvenNav.value / (1 - feeDecimal.value)) - nav.value, 4)} 元/份` }
+  { label: '当前净值差距', value: `${fmt(breakEvenNav.value - nav.value, 4)} 元/份` }
 ])
 </script>
